@@ -100,7 +100,7 @@ eval val@(Bool _) = val
 eval (List [Atom "quote", val]) = val
     
 main :: IO ()
-main = do args <- getArgs
-	  putStrLn (readExpr (args !! 0))
+main = getArgs >>= putStrLn . show . eval . readExpr . (!! 0)
+
 	    
 	    
