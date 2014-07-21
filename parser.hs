@@ -74,7 +74,7 @@ parseExpr = parseAtom
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
     Left err -> "No match: " ++ show err
-    Right _ -> "Found value" 
+    Right val -> "Found " ++ show val
 
 -- Evaluator
 showVal :: LispVal -> String
@@ -89,6 +89,8 @@ showVal (DottedList head tail) = "(" ++ unwordsList head ++ " . " ++ showVal tai
 
 unwordsList :: [LispVal] -> String
 unwordsList = unwords . map showVal
+
+instance Show LispVal where show = showVal
     
 main :: IO ()
 main = do args <- getArgs
