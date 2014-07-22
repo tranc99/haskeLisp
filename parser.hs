@@ -145,6 +145,21 @@ showError (NotFunction message func) = message ++ ": " ++ show expected
                                     ++ " args; found values " ++ unwordsList found
 showError (TypeMismatch expected found) = "Invalid type: expected " ++ expected
                                     ++ ", found " ++ show found
+showError (Parser parseErr) = "Parse error at " ++ show parseErr
+
+instance Show LispError where show = showError
+
+instance Error LispError where
+        noMsg = Default "An error has occured"
+        strMsg = Default
+
+-- represent functions that may throw a LispError or return a value
+type ThrowsError = Either LispError
+
+trapError action = catchError action (return . show)
+
+extractValue :: ThrowsError a -> a
+extractValue (Right val) = val
     
 main :: IO ()
 main = getArgs >>= putStrLn . show . eval . readExpr . (!! 0)
