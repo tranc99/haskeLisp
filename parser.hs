@@ -118,7 +118,7 @@ primitives = [("+", numericBinop (+)),
               ("strings=?", strBoolBinop (>)),
               ("strings?", strBoolBinop (>)),
               ("strings<=?", strBoolBinop (<=)),
-              ("strings>=?", strBoolBinop (>=)),
+              ("strings>=?", strBoolBinop (>=))
               ]
 
 boolBinop :: (LispVal -> ThrowsError a) -> (a -> a -> Bool) -> [LispVal] -> ThrowsError LispVal
@@ -127,6 +127,22 @@ boolBinop unpacker op args = if length args /= 2
                              else do left <- unpacker $ args !! 0
                                      right <- unpacker $ args !! 1
                                      return $ Bool $ left `op` right
+
+numBoolBinop = boolBinop unpackNum
+strBoolBinop = boolBinop unpackStr
+boolBoolBinop = boolBinop unpackBool
+
+-- unpack strings from Lisp values
+unpackStr :: LispVal -> ThrowsError String
+unpackStr (String s) = return s
+unpackStr (Number s) = return $ show s
+unpackStr (Bool s) = return $ show s
+unpackStr notString = throwError $ TypeMismatch "string" notString
+
+-- unpack booleans
+unpackBool :: LispVal -> ThrowsError Bool
+unpackBool (Bool b) = return b
+unpackBool notBool = throwError $ TypeMismatch "boolean" notBool
                              
               
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
