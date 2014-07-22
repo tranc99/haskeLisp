@@ -2,6 +2,7 @@ module Main where
 import System.Environment
 import Text.ParserCombinators.Parsec hiding (spaces)
 import Monad
+import Control.Monad.Error
 
 -- parse Lisp symbols
 symbol :: Parser Char
@@ -126,6 +127,24 @@ unpackNum (String n) = let parsed = reads n in
 unpackNum (List [n]) = unpackNum n
 unpackNum _ = 0
 
+
+-- data type to represent an error
+data LispError = NumArgs Integer [LispVal]
+                | TypeMismatch String LispVal
+                | Parser ParserError
+                | BadSpecialForm String LispVal
+                | NotFunction String String
+                | UnboundVar String String
+                | Default String
+    
+-- print out the Scheme error types
+showError :: LispError -> String
+showError (Unboundvar message varname) = message ++ ": " ++ varname
+showError (BadSpecialForm message form) = message ++ ": " ++ show form
+showError (NotFunction message func) = message ++ ": " ++ show expected
+                                    ++ " args; found values " ++ unwordsList found
+showError (TypeMismatch expected found) = "Invalid type: expected " ++ expected
+                                    ++ ", found " ++ show found
     
 main :: IO ()
 main = getArgs >>= putStrLn . show . eval . readExpr . (!! 0)
