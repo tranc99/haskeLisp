@@ -1,8 +1,8 @@
 module Main where
-import System.Environment
-import Text.ParserCombinators.Parsec hiding (spaces)
 import Monad
+import System.Environment
 import Control.Monad.Error
+import Text.ParserCombinators.Parsec hiding (spaces)
 
 -- parse Lisp symbols
 symbol :: Parser Char
@@ -134,19 +134,18 @@ unpackNum notNum = throwError $ TypeMismatch "number" notNum
 
 -- data type to represent an error
 data LispError = NumArgs Integer [LispVal]
-                | TypeMismatch String LispVal
-                | Parser ParserError
-                | BadSpecialForm String LispVal
-                | NotFunction String String
-                | UnboundVar String String
-                | Default String
+               | TypeMismatch String LispVal
+               | Parser ParseError
+               | BadSpecialForm String LispVal
+               | NotFunction String String
+               | UnboundVar String String
+               | Default String
     
 -- print out the Scheme error types
 showError :: LispError -> String
-showError (Unboundvar message varname) = message ++ ": " ++ varname
+showError (UnboundVar message varname) = message ++ ": " ++ varname
 showError (BadSpecialForm message form) = message ++ ": " ++ show form
-showError (NotFunction message func) = message ++ ": " ++ show expected
-                                    ++ " args; found values " ++ unwordsList found
+showError (NotFunction message func) = message ++ ": " ++ show func
 showError (TypeMismatch expected found) = "Invalid type: expected " ++ expected
                                     ++ ", found " ++ show found
 showError (Parser parseErr) = "Parse error at " ++ show parseErr
@@ -166,7 +165,10 @@ extractValue :: ThrowsError a -> a
 extractValue (Right val) = val
     
 main :: IO ()
-main = getArgs >>= putStrLn . show . eval . readExpr . (!! 0)
+main = do
+        args <- getArgs
+        evaled <- return $ liftM show $ readExpr (args !! 0)
+        putStrLn $ extractValue $ trapError evaled
 
 	    
 	    
