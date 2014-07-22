@@ -93,6 +93,11 @@ eval val@(Bool _) = return val
 eval (List [Atom "quote", val]) = return val
 eval (List (Atom func : args)) = mapM eval args >>= apply func
 eval badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
+eval (List [Atom "if", pred, conseq, alt]) = 
+    do result <- eval pred
+       case result of
+         Bool False -> eval alt
+         otherwise -> eval conseq
 
 apply :: String -> [LispVal] -> ThrowsError LispVal
 apply func args = maybe (throwError $ NotFunction "Unrecognized primitive function args" func)
@@ -188,3 +193,10 @@ trapError action = catchError action (return . show)
 
 extractValue :: ThrowsError a -> a
 extractValue (Right val) = val
+
+-- list primitives
+car :: [LispVal] -> ThrowsError LispVal
+car [List (x : xs)] = return x
+car [DottedList (x : xs) _] = return x
+car [badArg] = throwError $ TypeMismatch "pair" badArg
+car badArgList = throwError $ NumArgs 1 badArgList
