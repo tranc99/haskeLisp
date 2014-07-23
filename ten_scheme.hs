@@ -100,8 +100,8 @@ eval env (List [Atom "quote", val]) = return val
 eval env (List [Atom "if", pred, conseq, alt]) =
      do result <- eval env pred
         case result of
-                Bool False -> eval env alt
-                otherwise -> eval env conseq
+             Bool False -> eval env alt
+             otherwise -> eval env conseq
 eval env (List [Atom "set!", Atom var, form]) =
      eval env form >>= setVar env var
 eval env (List [Atom "define", Atom var, form]) =
@@ -130,10 +130,11 @@ primitives = [("+", numericBinop (+)),
               ("<=", numBoolBinop (<=)),
               ("&&", boolBoolBinop (&&)),
               ("||", boolBoolBinop (||)),
-              ("strings=?", strBoolBinop (>)),
-              ("strings?", strBoolBinop (>)),
-              ("strings<=?", strBoolBinop (<=)),
-              ("strings>=?", strBoolBinop (>=)),
+              ("string=?", strBoolBinop (==)),
+              ("string<?", strBoolBinop (<)),
+              ("string>?", strBoolBinop (>)),
+              ("string<=?", strBoolBinop (<=)),
+              ("string>=?", strBoolBinop (>=)),
               ("car", car),
               ("cdr", cdr),
               ("cons", cons),
